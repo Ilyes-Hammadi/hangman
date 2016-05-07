@@ -1,8 +1,7 @@
 """utils.py - File for collecting general utility functions."""
 
-import logging
-from google.appengine.ext import ndb
 import endpoints
+from google.appengine.ext import ndb
 
 
 def get_by_urlsafe(urlsafe, model):

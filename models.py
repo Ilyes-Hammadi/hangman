@@ -5,8 +5,9 @@ classes they can include methods (such as 'to_form' and 'new_game')."""
 import random
 import urllib2
 from datetime import date, datetime
-from protorpc import messages
+
 from google.appengine.ext import ndb
+from protorpc import messages
 
 """ Point for each good responce when making a move """
 POINTS_PER_MOVE = 20
