@@ -102,7 +102,7 @@ class HangmanApi(remote.Service):
 
         if len(games) == 0:
             # TODO: reaplce with a random genereated word
-            Game.new_game(user.key, 'xeroxia')
+            Game.new_game(user.key)
             message = 'Game Created'
         else:
             message = 'You have already a runing game'

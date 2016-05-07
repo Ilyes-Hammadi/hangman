@@ -3,6 +3,7 @@ entities used by the Game. Because these classes are also regular Python
 classes they can include methods (such as 'to_form' and 'new_game')."""
 
 import random
+import urllib2
 from datetime import date, datetime
 from protorpc import messages
 from google.appengine.ext import ndb
@@ -68,7 +69,7 @@ class Game(ndb.Model):
     """Game object"""
     mystery_word = ndb.StringProperty(required=True)
     word_tryed = ndb.StringProperty()
-    attempts_allowed = ndb.IntegerProperty(required=True, default=6)
+    attempts_allowed = ndb.IntegerProperty(required=True, default=0)
     attempts_played = ndb.IntegerProperty(required=True, default=0)
     attempts_correct = ndb.IntegerProperty(required=True, default=0)
     game_over = ndb.BooleanProperty(required=True, default=False)
@@ -76,11 +77,15 @@ class Game(ndb.Model):
     score = ndb.IntegerProperty(default=0)
     message = ndb.StringProperty()
     moves_keys = ndb.KeyProperty(repeated=True, kind='Move')
+    date = ndb.DateTimeProperty(required=True)
 
     @classmethod
-    def new_game(cls, user, word):
+    def new_game(cls, user):
         """Creates and returns a new game"""
-        game = Game(user=user, mystery_word=word)
+        word = cls.get_random_words()
+        # attemps allowed is the word length plus 3 moves
+        attempts_allowed = len(word) + 3
+        game = Game(user=user, mystery_word=word, attempts_allowed=attempts_allowed, date=datetime.now())
         word = ''
         for i in game.mystery_word:
             word += '_'
@@ -88,6 +93,7 @@ class Game(ndb.Model):
         game.word_tryed = word
         game.put()
         return game
+
     def get_user(self):
         return User.query(User.key == self.user).get()
 
@@ -96,6 +102,7 @@ class Game(ndb.Model):
         form = GameForm()
         form.urlsafe_key = self.key.urlsafe()
         form.user_name = self.user.get().name
+        form.attempts_allowed = self.attempts_allowed
         form.attempts_played = self.attempts_played
         form.attempts_correct = self.attempts_correct
         form.game_over = self.game_over
@@ -104,6 +111,7 @@ class Game(ndb.Model):
         form.message = self.message
         form.score = self.score
         form.moves = self.get_move_forms()
+        form.date = str(self.date)
         return form
 
     def get_move_forms(self):
@@ -176,8 +184,19 @@ class Game(ndb.Model):
 
         self.put()
 
-    def get_random_words(self):
-        pass
+    @classmethod
+    def get_random_words(cls):
+        """ Generate random word for each game """
+        # url to get a list of random word
+        word_site = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
+        # create an http call
+        response = urllib2.urlopen(word_site)
+        # read and split the words
+        txt = response.read()
+        words = txt.splitlines()
+        # get a random word from the list
+        num = random.randrange(1, len(words))
+        return words[num]
 
 
 class Score(ndb.Model):
@@ -226,7 +245,8 @@ class GameForm(messages.Message):
     message = messages.StringField(8)
     score = messages.IntegerField(9)
     moves = messages.MessageField(MoveForms, 10)
-
+    date = messages.StringField(11)
+    attempts_allowed = messages.IntegerField(12)
 
 class GameForms(messages.Message):
     items = messages.MessageField(GameForm, 1, repeated=True)

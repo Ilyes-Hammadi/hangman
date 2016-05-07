@@ -15,7 +15,7 @@ class SendReminderEmail(webapp2.RequestHandler):
     def get(self):
         # """Send a reminder email to each User that have runnig game.
         # Called every hour using a cron job"""
-        app_id = "hangman-1303"
+        app_id = app_identity.get_application_id()
         games = Game.query(Game.game_over == False).fetch()
         users = []
         for game in games:
