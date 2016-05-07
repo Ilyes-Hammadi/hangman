@@ -8,7 +8,7 @@ from datetime import date, datetime
 from protorpc import messages
 from google.appengine.ext import ndb
 
-# the point for each good responce when making a move
+""" Point for each good responce when making a move """
 POINTS_PER_MOVE = 20
 
 
@@ -18,18 +18,13 @@ class User(ndb.Model):
     email = ndb.StringProperty(required=True)
     score = ndb.IntegerProperty(default=0)
 
-    def calculate_ratio(self):
-        number_games_played = len(Score.query(Score.user == self.key).fetch())
-        number_games_won = len(Score.query(Score.user == self.key and Score.won == True).fetch())
-        if number_games_played > 0:
-            self.score = float(number_games_won) / float(number_games_played)
-        self.put()
-
     def get_user_rank(self):
+        """ Returns the user rank"""
         users = User.query().order(User.score).fetch()
         return users.index(self) + 1
 
     def to_form(self):
+        """Returns a UserForm representation of the User"""
         form = UserForm()
         form.name = self.name
         form.email = self.email
@@ -42,6 +37,7 @@ class User(ndb.Model):
 
 
 class Move(ndb.Model):
+    """ Move object """
     letter_played = ndb.StringProperty(required=True)
     is_correct = ndb.BooleanProperty(required=True)
     message = ndb.StringProperty(required=True)
@@ -49,6 +45,7 @@ class Move(ndb.Model):
 
     @classmethod
     def new_move(cls, letter_played, is_correct, message):
+        """ Creates and returns a new move key"""
         move = Move(letter_played=letter_played,
                     is_correct=is_correct,
                     message=message,
@@ -57,6 +54,7 @@ class Move(ndb.Model):
         return move.key
 
     def to_form(self):
+        """Returns a MoveForm representation of the Move"""
         form = MoveForm()
         form.letter_played = self.letter_played
         form.is_correct = self.is_correct
@@ -95,6 +93,7 @@ class Game(ndb.Model):
         return game
 
     def get_user(self):
+        """ Return the game user """
         return User.query(User.key == self.user).get()
 
     def to_form(self):
@@ -115,6 +114,7 @@ class Game(ndb.Model):
         return form
 
     def get_move_forms(self):
+        """ Helper method to get move forms from game """
         moves = []
         for key in self.moves_keys:
             move = Move.query(Move.key == key).order(-Move.date).get()
@@ -146,11 +146,9 @@ class Game(ndb.Model):
 
     def make_move(self, char):
         """ The game logic """
+        # convert the data into list
         word = list(self.word_tryed)
         m_word = list(self.mystery_word)
-
-        print ''.join(word)
-        print ''.join(m_word)
 
         self.attempts_played += 1
 
@@ -161,6 +159,7 @@ class Game(ndb.Model):
                     indices = [i for i, x in enumerate(m_word) if x == c]
                     for i in indices:
                         word[i] = c
+            # for each good responce add point
             self.score += POINTS_PER_MOVE
             self.message = 'Nice work'
             self.moves_keys.append(Move.new_move(char, True, self.message))
@@ -169,19 +168,22 @@ class Game(ndb.Model):
             self.message = 'Keep Going'
             self.moves_keys.append(Move.new_move(char, False, self.message))
 
+        # if the user makes moves more then the moves allowed stop the game
         if self.attempts_played >= self.attempts_allowed:
             self.game_over = True
             self.message = 'Game Over'
             self.end_game(won=False)
-
+        # if the user found the word he wins
         if word == m_word:
             self.game_over = True
             self.message = 'Well done you found it'
             self.end_game(won=True)
 
+        # convert the data into strings
         self.word_tryed = ''.join(word)
         self.mystery_word = ''.join(m_word)
 
+        # save the changes
         self.put()
 
     @classmethod
@@ -196,7 +198,7 @@ class Game(ndb.Model):
         words = txt.splitlines()
         # get a random word from the list
         num = random.randrange(1, len(words))
-        return words[num]
+        return words[num].lower()
 
 
 class Score(ndb.Model):
@@ -213,6 +215,7 @@ class Score(ndb.Model):
 
 
 class UserForm(messages.Message):
+    """UserForm for outbound user state information"""
     name = messages.StringField(1, required=True)
     email = messages.StringField(2, required=True)
     total_played = messages.IntegerField(3, required=True)
@@ -223,6 +226,7 @@ class UserForm(messages.Message):
 
 
 class MoveForm(messages.Message):
+    """MoveForm for outbound move state information"""
     letter_played = messages.StringField(1, required=True)
     is_correct = messages.BooleanField(2, required=True)
     message = messages.StringField(3, required=True)
@@ -230,6 +234,7 @@ class MoveForm(messages.Message):
 
 
 class MoveForms(messages.Message):
+    """MoveForms for outbound moves state information"""
     items = messages.MessageField(MoveForm, 1, repeated=True)
 
 
@@ -247,6 +252,7 @@ class GameForm(messages.Message):
     moves = messages.MessageField(MoveForms, 10)
     date = messages.StringField(11)
     attempts_allowed = messages.IntegerField(12)
+
 
 class GameForms(messages.Message):
     items = messages.MessageField(GameForm, 1, repeated=True)
