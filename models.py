@@ -258,20 +258,6 @@ class GameForm(messages.Message):
 class GameForms(messages.Message):
     items = messages.MessageField(GameForm, 1, repeated=True)
 
-
-class NewGameForm(messages.Message):
-    """Used to create a new game"""
-    user_name = messages.StringField(1, required=True)
-    min = messages.IntegerField(2, default=1)
-    max = messages.IntegerField(3, default=10)
-    attempts = messages.IntegerField(4, default=5)
-
-
-class MakeMoveForm(messages.Message):
-    """Used to make a move in an existing game"""
-    guess = messages.IntegerField(1, required=True)
-
-
 class ScoreForm(messages.Message):
     """ScoreForm for outbound Score information"""
     user_name = messages.StringField(1, required=True)

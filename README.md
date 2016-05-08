@@ -11,12 +11,11 @@
  
  
 ##Game Description:
-Guess a number is a simple guessing game. Each game begins with a random 'target'
-number between the minimum and maximum values provided, and a maximum number of
-'attempts'. 'Guesses' are sent to the `make_move` endpoint which will reply
-with either: 'too low', 'too high', 'you win', or 'game over' (if the maximum
-number of attempts is reached).
-Many different Guess a Number games can be played by many different Users at any
+Hangman is a simple guessing game. Each game begins with a random generated word,
+each word has it's own number of moves, `make_move` endpoint is used to make a move
+and it reply with either 'Nice Work' for a correct letter, 'Keep Going' for a bad letter,
+'Game Over' if the maximum number of attempts is reached.
+Many different Hangman games can be played by many different Users at any
 given time. Each game can be retrieved or played by using the path parameter
 `urlsafe_game_key`.
 
@@ -32,63 +31,74 @@ given time. Each game can be retrieved or played by using the path parameter
  - **create_user**
     - Path: 'user'
     - Method: POST
-    - Parameters: user_name, email (optional)
+    - Parameters: user_name, email
     - Returns: Message confirming creation of the User.
     - Description: Creates a new User. user_name provided must be unique. Will 
-    raise a ConflictException if a User with that user_name already exists.
+    raise a ConflictException if a User with that user_name already exists, email must
+    be valid will raise a UnauthorizedException.
     
- - **new_game**
+ - **create_game**
     - Path: 'game'
     - Method: POST
-    - Parameters: user_name, min, max, attempts
+    - Parameters: user_name, email
     - Returns: GameForm with initial game state.
     - Description: Creates a new Game. user_name provided must correspond to an
     existing user - will raise a NotFoundException if not. Min must be less than
     max. Also adds a task to a task queue to update the average moves remaining
     for active games.
      
- - **get_game**
-    - Path: 'game/{urlsafe_game_key}'
+ - **get_user_games**
+    - Path: 'user'
     - Method: GET
-    - Parameters: urlsafe_game_key
+    - Parameters: user_name, email
     - Returns: GameForm with current game state.
     - Description: Returns the current state of a game.
     
  - **make_move**
     - Path: 'game/{urlsafe_game_key}'
     - Method: PUT
-    - Parameters: urlsafe_game_key, guess
+    - Parameters: urlsafe_game_key, letter
     - Returns: GameForm with new game state.
-    - Description: Accepts a 'guess' and returns the updated state of the game.
+    - Description: Accepts a 'letter' and returns the updated state of the game.
     If this causes a game to end, a corresponding Score entity will be created.
-    
- - **get_scores**
+
+ - **cancel_game**
+    - Path: 'game/cancel'
+    - Method: PUT
+    - Parameters: user_name, email
+    - Returns: Message that says that game has been canceled.
+    - Description: Cancel the last game played by the user
+
+ - **get_high_scores**
     - Path: 'scores'
     - Method: GET
-    - Parameters: None
+    - Parameters: user_name, email, number_of_results (optional)
     - Returns: ScoreForms.
-    - Description: Returns all Scores in the database (unordered).
+    - Description: Returns all user Scores in the database ordered by the latest played.
     
- - **get_user_scores**
-    - Path: 'scores/user/{user_name}'
+ - **get_user_rankings**
+    - Path: 'user/rank'
     - Method: GET
-    - Parameters: user_name
-    - Returns: ScoreForms. 
-    - Description: Returns all Scores recorded by the provided player (unordered).
-    Will raise a NotFoundException if the User does not exist.
-    
- - **get_active_game_count**
-    - Path: 'games/active'
+    - Parameters: user_name, email
+    - Returns: UserForm.
+    - Description: Returns user information's with the user rank games won/lost score
+    total_played.
+
+ - **get_game_history**
+    - Path: 'game/history/{urlsafe_game_key}'
     - Method: GET
-    - Parameters: None
-    - Returns: StringMessage
-    - Description: Gets the average number of attempts remaining for all games
-    from a previously cached memcache key.
+    - Parameters: urlsafe_game_key
+    - Returns: MoveForms
+    - Description: Gets all the moves played by the user.
 
 ##Models Included:
  - **User**
-    - Stores unique user_name and (optional) email address.
-    
+    - Stores unique user_name ,email and score (default is 0).
+
+ - **Move**
+    - Stores the letter played, is_correct boolean variable, message and date time
+    of the move.
+
  - **Game**
     - Stores unique game states. Associated with User model via KeyProperty.
     
@@ -96,16 +106,25 @@ given time. Each game can be retrieved or played by using the path parameter
     - Records completed games. Associated with Users model via KeyProperty.
     
 ##Forms Included:
+ - **UserForm**
+    - Representation of User's info's state (name,email,total_played,
+     won, lost, score, ranking)
+
+ - **MoveForm**
+    - Representation of Move's state (letter_played, is_correct flag, message, date)
+
+ - **MoveForms**
+    - Multiple MoveForm container.
+
  - **GameForm**
-    - Representation of a Game's state (urlsafe_key, attempts_remaining,
-    game_over flag, message, user_name).
- - **NewGameForm**
-    - Used to create a new game (user_name, min, max, attempts)
- - **MakeMoveForm**
-    - Inbound make move form (guess).
+    - Representation of a Game's state (urlsafe_key, attempts_allowed,attempts_played,
+    attempts_correct, game_over, user_name, mystery_word, word_tried, message, score,
+    moves, date).
+
  - **ScoreForm**
     - Representation of a completed game's Score (user_name, date, won flag,
-    guesses).
+    score, mystery_word).
+
  - **ScoreForms**
     - Multiple ScoreForm container.
  - **StringMessage**
