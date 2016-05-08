@@ -256,6 +256,7 @@ class GameForm(messages.Message):
 
 
 class GameForms(messages.Message):
+    """ Returns multiple GameForm """
     items = messages.MessageField(GameForm, 1, repeated=True)
 
 class ScoreForm(messages.Message):
