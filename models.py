@@ -68,7 +68,7 @@ class Move(ndb.Model):
 class Game(ndb.Model):
     """Game object"""
     mystery_word = ndb.StringProperty(required=True)
-    word_tryed = ndb.StringProperty()
+    word_tried = ndb.StringProperty()
     attempts_allowed = ndb.IntegerProperty(required=True, default=0)
     attempts_played = ndb.IntegerProperty(required=True, default=0)
     attempts_correct = ndb.IntegerProperty(required=True, default=0)
@@ -83,14 +83,14 @@ class Game(ndb.Model):
     def new_game(cls, user):
         """Creates and returns a new game"""
         word = cls.get_random_words()
-        # attemps allowed is the word length plus 3 moves
+        # attempts allowed is the word length plus 3 moves
         attempts_allowed = len(word) + 3
         game = Game(user=user, mystery_word=word, attempts_allowed=attempts_allowed, date=datetime.now())
         word = ''
         for i in game.mystery_word:
             word += '_'
 
-        game.word_tryed = word
+        game.word_tried = word
         game.put()
         return game
 
@@ -108,7 +108,7 @@ class Game(ndb.Model):
         form.attempts_correct = self.attempts_correct
         form.game_over = self.game_over
         form.mystery_word = self.mystery_word
-        form.word_tryed = self.word_tryed
+        form.word_tryed = self.word_tried
         form.message = self.message
         form.score = self.score
         form.moves = self.get_move_forms()
@@ -156,7 +156,7 @@ class Game(ndb.Model):
             raise endpoints.UnauthorizedException('Symbols and numbers are not allowed.')
 
         # convert the data into list
-        word = list(self.word_tryed)
+        word = list(self.word_tried)
         m_word = list(self.mystery_word)
 
         self.attempts_played += 1
@@ -189,7 +189,7 @@ class Game(ndb.Model):
             self.end_game(won=True)
 
         # convert the data into strings
-        self.word_tryed = ''.join(word)
+        self.word_tried = ''.join(word)
         self.mystery_word = ''.join(m_word)
 
         # save the changes

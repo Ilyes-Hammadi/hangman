@@ -1,0 +1,18 @@
+Hangman
+Let's start with the main, i added the score to the user form to make it easier
+to calculate the ranking and avoid using a big query. Move model is very useful to keep
+track of each move. I added score to the Game model to save the score of each game. I added the
+mystery word to the score model so that the user can find all the words that he played.
+When designing the game i found some difficulties combining the game logic with all the new
+knowledge that i have got from the Design Game course. So i braked the problem into
+many peaces,i toked the guess number project as an example ,i coded the game logical intoa
+python file that i tested and re tested many times then i put that logic
+into a method. Then i started designing the api by implementing the
+create user and create game api methods. When those methods where ok i coded the make_move api
+to test my game logic with the Api explorer. on of the problem i faced was to not know
+what kind of exception i have to raise when handling an error. When of my main decisions was to separate
+the move logic from the game object so i created a new object named Move and a Game has many moves so i used KeyProperty
+with the parameter repeated true. Getting a system to generate random words was also a big problem when designing the game
+so i searched on how to give my users to ability to play with new words each time, then i found a comment on stackoverfllow
+with a url that propose a list of words, using python a get this list and extracted all the words from it
+and each time a new game is created i generate a random word from this list.
