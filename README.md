@@ -19,6 +19,12 @@ Many different Hangman games can be played by many different Users at any
 given time. Each game can be retrieved or played by using the path parameter
 `urlsafe_game_key`.
 
+##Scoring System:
+For each good letter the user get's 20 (default value can be changed). When the user
+get's all the letter the score game will be added to his score. If the user loses the game
+or cancel it the score will not be added to the user score.
+
+
 ##Files Included:
  - api.py: Contains endpoints and game playing logic.
  - app.yaml: App configuration.
@@ -61,6 +67,7 @@ given time. Each game can be retrieved or played by using the path parameter
     - Returns: GameForm with new game state.
     - Description: Accepts a 'letter' and returns the updated state of the game.
     If this causes a game to end, a corresponding Score entity will be created.
+    Will Raise UnauthorizedException if the letter is a number or symbol.
 
  - **cancel_game**
     - Path: 'game/cancel'

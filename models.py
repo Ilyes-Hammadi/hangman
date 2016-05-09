@@ -6,6 +6,7 @@ import random
 import urllib2
 from datetime import date, datetime
 
+import endpoints
 from google.appengine.ext import ndb
 from protorpc import messages
 
@@ -147,6 +148,13 @@ class Game(ndb.Model):
 
     def make_move(self, char):
         """ The game logic """
+
+        # check if the char is not a number or a symbol
+        # take only the first letter of the input
+        char = char[0].lower()
+        if not ('a' <= char and char <= 'z'):
+            raise endpoints.UnauthorizedException('Symbols and numbers are not allowed.')
+
         # convert the data into list
         word = list(self.word_tryed)
         m_word = list(self.mystery_word)
@@ -160,7 +168,7 @@ class Game(ndb.Model):
                     indices = [i for i, x in enumerate(m_word) if x == c]
                     for i in indices:
                         word[i] = c
-            # for each good responce add point
+            # for each good response add point
             self.score += POINTS_PER_MOVE
             self.message = 'Nice work'
             self.moves_keys.append(Move.new_move(char, True, self.message))
@@ -258,6 +266,7 @@ class GameForm(messages.Message):
 class GameForms(messages.Message):
     """ Returns multiple GameForm """
     items = messages.MessageField(GameForm, 1, repeated=True)
+
 
 class ScoreForm(messages.Message):
     """ScoreForm for outbound Score information"""

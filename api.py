@@ -7,8 +7,7 @@ primarily with communication to/from the API's users."""
 import endpoints
 from protorpc import remote, messages
 
-
-from models import *
+from models import User, Game, StringMessage, GameForms, GameForm, ScoreForms, Score, UserForm, MoveForms
 from utils import get_by_urlsafe
 
 USER_REQUEST = endpoints.ResourceContainer(user_name=messages.StringField(1),
