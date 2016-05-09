@@ -5,7 +5,7 @@ track of each move. I added score to the Game model to save the score of each ga
 mystery word to the score model so that the user can find all the words that he played.
 When designing the game i found some difficulties combining the game logic with all the new
 knowledge that i have got from the Design Game course. So i braked the problem into
-many peaces,i toked the guess number project as an example ,i coded the game logical intoa
+many peaces,i toked the guess number project as an example ,i coded the game logical into a
 python file that i tested and re tested many times then i put that logic
 into a method. Then i started designing the api by implementing the
 create user and create game api methods. When those methods where ok i coded the make_move api
